@@ -51,10 +51,12 @@ if (!($workerPid = pcntl_fork())) {
 			}
 
 			if (((int)$n) >= MAX_DROP_FAILS) {
+				printf("Got max drop!\n");
 				$shmid = shmop_open($shmKey[0], "c", 0600, SHMOP_SIZE);
 				$curData = str_from_mem(shmop_read($shmid, 0, SHMOP_SIZE));
-				
+				var_dump($curData);
 				$r = json_decode($curData, true);
+				var_dump($r);
 				if (is_array($r)) {
 					$r[] = $m[1];
 					$curData = json_encode($r);
