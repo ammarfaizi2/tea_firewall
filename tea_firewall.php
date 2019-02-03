@@ -82,7 +82,8 @@ if (!($blockerPid = pcntl_fork())) {
 	require __DIR__."/shmop_helpers.php";
 
 	shell_exec("iptables -N TEA_FIREWALL >> /dev/null 2>&1");
-	shell_exec("iptables -A TEA_FIREWALL -j RETURN");
+	shell_exec("iptables -D TEA_FIREWALL -j RETURN >> /dev/null 2>&1");
+	shell_exec("iptables -A TEA_FIREWALL -j RETURN >> /dev/null 2>&1");
 	while (true) {
 		$shmid = shmop_open($shmKey[0], "c", 0600, SHMOP_SIZE);
 		$curData = str_from_mem(shmop_read($shmid, 0, SHMOP_SIZE));
@@ -96,8 +97,8 @@ if (!($blockerPid = pcntl_fork())) {
 			foreach ($curData as $k => $ip) {
 				unset($curData[$k]);
 
-				$a = sprintf("iptables -D TEA_FIREWALL -s %s -j DROP", $ip);
-				$b = sprintf("iptables -I TEA_FIREWALL 1 -s %s -j DROP", $ip);
+				$a = sprintf("iptables -D TEA_FIREWALL -s %s -j DROP >> /dev/null 2>&1", $ip);
+				$b = sprintf("iptables -I TEA_FIREWALL 1 -s %s -j DROP >> /dev/null 2>&1", $ip);
 
 				printf("%s\n%s\n", $a, $b);
 
@@ -109,7 +110,7 @@ if (!($blockerPid = pcntl_fork())) {
 
 		shmop_write($shmid, str_to_nts(json_encode($curData)), 0);
 		shmop_close($shmid);
-		sleep(3);
+		sleep(BLOCKER_SLEEP);
 	}
 	exit(0);
 }
