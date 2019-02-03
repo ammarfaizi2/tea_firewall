@@ -37,7 +37,7 @@ if (!($workerPid = pcntl_fork())) {
 	);
 
 	while (is_resource($handle)) {
-		$line = fgets($handle);
+		$line = fgets($pipes[1]);
 		printf("drop-log-parser...\n");
 		if (preg_match("/(?:\[INPUT_LOG:DROP\].+SRC=)((?:\d{1,3}\.){3}\d{1,3})/USsi", $line, $m)) {
 			printf("Match!\n");
