@@ -12,14 +12,14 @@ $shmKey = [
 	ftok(__FILE__, 'm')
 ];
 
+define("SHMOP_SIZE", 1024 * 1024 * 10);
+
 if (!($workerPid = pcntl_fork())) {
 	
 	cli_set_process_title("worker: drop-log-parser");
 
 	require __DIR__."/config.php";
 	require __DIR__."/shmop_helpers.php";
-
-	define("SHMOP_SIZE", 1024 * 1024 * 10);
 
 	$f = "";
 	$ldir = sprintf("%s/ld", STORAGE_DIR);
