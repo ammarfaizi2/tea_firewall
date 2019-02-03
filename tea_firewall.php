@@ -14,7 +14,7 @@ $shmKey = [
 
 define("SHMOP_SIZE", 1024 * 1024 * 10);
 
-if (!($workerPid = pcntl_fork())) {
+if (!($parserPid = pcntl_fork())) {
 	
 	cli_set_process_title("worker: drop-log-parser");
 
@@ -36,7 +36,17 @@ if (!($workerPid = pcntl_fork())) {
 		$pipes
 	);
 
+	$it = 0;
+
 	while (is_resource($handle)) {
+
+		$it++;
+
+		if ($it >= 100) {
+			$it = 0;
+			sleep(60);
+		}
+
 		print(".\n");
 		$line = fgets($pipes[1]);
 		if (preg_match("/(?:\[INPUT_LOG:DROP\].+SRC=)((?:\d{1,3}\.){3}\d{1,3})/USsi", $line, $m)) {
@@ -79,12 +89,26 @@ if (!($workerPid = pcntl_fork())) {
 
 if (!($blockerPid = pcntl_fork())) {
 
+	cli_set_process_title("worker: blocker");
+
+	require __DIR__."/config.php";
 	require __DIR__."/shmop_helpers.php";
 
 	shell_exec("iptables -N TEA_FIREWALL >> /dev/null 2>&1");
 	shell_exec("iptables -D TEA_FIREWALL -j RETURN >> /dev/null 2>&1");
 	shell_exec("iptables -A TEA_FIREWALL -j RETURN >> /dev/null 2>&1");
+
+	$it = 0;
+
 	while (true) {
+
+		$it++;
+
+		if ($it >= 100) {
+			$it = 0;
+			sleep(60);
+		}
+		
 		$shmid = shmop_open($shmKey[0], "c", 0600, SHMOP_SIZE);
 		$curData = str_from_mem(shmop_read($shmid, 0, SHMOP_SIZE));
 		
