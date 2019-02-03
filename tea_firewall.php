@@ -37,11 +37,9 @@ if (!($workerPid = pcntl_fork())) {
 	);
 
 	while (is_resource($handle)) {
+		print(".\n");
 		$line = fgets($pipes[1]);
-		printf("drop-log-parser...\n");
 		if (preg_match("/(?:\[INPUT_LOG:DROP\].+SRC=)((?:\d{1,3}\.){3}\d{1,3})/USsi", $line, $m)) {
-			printf("Match!\n");
-			var_dump($m);
 			$f = sprintf("%s/%s", $ldir, $m[1]);
 			
 			if (file_exists($f)) {
@@ -51,12 +49,10 @@ if (!($workerPid = pcntl_fork())) {
 			}
 
 			if (((int)$n) >= MAX_DROP_FAILS) {
-				printf("Got max drop!\n");
+				printf("Got max drop from %s!\n", $m[1]);
 				$shmid = shmop_open($shmKey[0], "c", 0600, SHMOP_SIZE);
 				$curData = str_from_mem(shmop_read($shmid, 0, SHMOP_SIZE));
-				var_dump($curData);
 				$r = json_decode($curData, true);
-				var_dump($r);
 				if (is_array($r)) {
 					$r[] = $m[1];
 					$curData = $r;
@@ -95,24 +91,20 @@ if (!($blockerPid = pcntl_fork())) {
 
 		$r = json_decode($curData, true);
 		$curData = $r;
-		var_dump($r);
 
-		shell_exec("iptables -D TEA_FIREWALL -j RETURN");
-		printf("iptables -D TEA_FIREWALL -j RETURN\n");
-		foreach ($curData as $k => $ip) {
-			
-			unset($curData[$k]);
+		if (count($curData)) {
+			foreach ($curData as $k => $ip) {
+				unset($curData[$k]);
 
-			$a = sprintf("iptables -D TEA_FIREWALL -s %s -j DROP", $ip);
-			$b = sprintf("iptables -A TEA_FIREWALL -s %s -j DROP", $ip);
+				$a = sprintf("iptables -D TEA_FIREWALL -s %s -j DROP", $ip);
+				$b = sprintf("iptables -I TEA_FIREWALL 1 -s %s -j DROP", $ip);
 
-			printf("%s\n%s\n", $a, $b);
+				printf("%s\n%s\n", $a, $b);
 
-			shell_exec($a);
-			shell_exec($b);
+				shell_exec($a);
+				shell_exec($b);
+			}
 		}
-		printf("iptables -A TEA_FIREWALL -j RETURN\n");
-		shell_exec("iptables -A TEA_FIREWALL -j RETURN");
 		unset($r);
 
 		shmop_write($shmid, str_to_nts(json_encode($curData)), 0);
