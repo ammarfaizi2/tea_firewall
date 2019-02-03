@@ -93,12 +93,6 @@ if (!($blockerPid = pcntl_fork())) {
 		var_dump($curData);
 		var_dump($r);
 
-		if (is_array($r)) {
-			$r[] = $m[1];
-			$curData = json_encode($r);
-		} else {
-			$curData = json_encode([$m[1]]);
-		}
 		unset($r);
 
 		shmop_write($shmid, str_to_nts(json_encode($curData)), 0);
