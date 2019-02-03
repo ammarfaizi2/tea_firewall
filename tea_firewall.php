@@ -27,7 +27,7 @@ if (!($parserPid = pcntl_fork())) {
 	is_dir($ldir) or mkdir($ldir);
 
 	$handle = proc_open(
-		"exec dmesg -w", 
+		"exec dmesg -wtf kern -l info", 
 		[
 			["pipe", "r"],
 			["pipe", "w"],
@@ -50,6 +50,7 @@ if (!($parserPid = pcntl_fork())) {
 		print(".\n");
 		$line = fgets($pipes[1]);
 		if (preg_match("/(?:\[INPUT_LOG:DROP\].+SRC=)((?:\d{1,3}\.){3}\d{1,3})/USsi", $line, $m)) {
+			print(".!\n");
 			$f = sprintf("%s/%s", $ldir, $m[1]);
 			
 			if (file_exists($f)) {
@@ -108,7 +109,7 @@ if (!($blockerPid = pcntl_fork())) {
 			$it = 0;
 			sleep(60);
 		}
-		
+
 		$shmid = shmop_open($shmKey[0], "c", 0600, SHMOP_SIZE);
 		$curData = str_from_mem(shmop_read($shmid, 0, SHMOP_SIZE));
 		
