@@ -91,7 +91,7 @@ if (!($blockerPid = pcntl_fork())) {
 
 		$r = json_decode($curData, true);
 		$curData = $r;
-
+		var_dump($r);
 		unset($r);
 
 		shmop_write($shmid, str_to_nts(json_encode($curData)), 0);
