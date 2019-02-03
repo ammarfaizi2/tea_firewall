@@ -90,8 +90,7 @@ if (!($blockerPid = pcntl_fork())) {
 		printf("Blocker...\n");
 
 		$r = json_decode($curData, true);
-		var_dump($curData);
-		var_dump($r);
+		$curData = $r;
 
 		unset($r);
 
