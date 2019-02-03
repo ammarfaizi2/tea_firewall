@@ -99,8 +99,10 @@ if (!($blockerPid = pcntl_fork())) {
 
 		shell_exec("iptables -D TEA_FIREWALL -j RETURN");
 		printf("iptables -D TEA_FIREWALL -j RETURN\n");
-		foreach ($curData as $ip) {
+		foreach ($curData as $k => $ip) {
 			
+			unset($curData[$k]);
+
 			$a = sprintf("iptables -D TEA_FIREWALL -s %s -j DROP", $ip);
 			$b = sprintf("iptables -A TEA_FIREWALL -s %s -j DROP", $ip);
 
