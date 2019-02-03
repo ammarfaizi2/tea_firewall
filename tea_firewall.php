@@ -88,12 +88,13 @@ if (!($blockerPid = pcntl_fork())) {
 		$shmid = shmop_open($shmKey[0], "c", 0600, SHMOP_SIZE);
 		$curData = str_from_mem(shmop_read($shmid, 0, SHMOP_SIZE));
 		
-		printf("Blocker...\n");
+		printf("#\n");
 
 		$r = json_decode($curData, true);
 		$curData = $r;
 
 		if (count($curData)) {
+			printf("#!\n");
 			foreach ($curData as $k => $ip) {
 				unset($curData[$k]);
 
