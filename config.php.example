@@ -1,0 +1,9 @@
+<?php
+
+// seconds
+define("SLEEP_PER_LINE", 1);
+define("BLOCKER_SLEEP", 5);
+
+define("MAX_DROP_FAILS", 10);
+define("STORAGE_DIR", __DIR__."/tea_firewall_storage");
+
